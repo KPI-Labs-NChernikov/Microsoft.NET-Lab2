@@ -2,8 +2,8 @@
 using System.Xml;
 using System.Xml.Linq;
 using Backend.Extensions;
-using Backend.Interfaces;
 using System.Xml.Serialization;
+using System.Reflection;
 
 namespace Backend
 {
@@ -26,65 +26,48 @@ namespace Backend
         {
             XmlDocument doc = new();
             doc.Load(stream);
-            Actors = new List<Actor>();
-            if (doc.DocumentElement is not null)
+            Actors = Read<List<Actor>>(doc.DocumentElement, nameof(Actors), true) ?? new List<Actor>();
+        }
+
+        private T? Read<T>(XmlNode? node, string name, bool isNullable)
+        {
+            if (node == null)
+                return default;
+            var type = typeof(T);
+            if (type.IsPrimitive || type.IsEnum || type == typeof(string))
+                return (T?)Convert.ChangeType(node.InnerText, type);
+            else if (typeof(IEnumerable<object>).IsAssignableFrom(type))
             {
-                foreach (XmlNode node in doc.DocumentElement)
+                var innerType = type.GetGenericArguments()[0];
+                Type listType = typeof(List<>).MakeGenericType(innerType);
+                var enumerable = Activator.CreateInstance(listType);
+                foreach (XmlNode item in node)
                 {
-                    var actor = new Actor
-                    {
-                        FirstName = node[nameof(Actor.FirstName).FirstToLower()]?.InnerText
-                            ?? throw new ArgumentNullException(nameof(Actor.FirstName).FirstToLower()),
-                        LastName = node[nameof(Actor.LastName).FirstToLower()]?.InnerText
-                            ?? throw new ArgumentNullException(nameof(Actor.LastName).FirstToLower()),
-                        Patronymic = node[nameof(Actor.Patronymic).FirstToLower()]?.InnerText,
-                        BirthYear = ushort.Parse(node[nameof(Actor.BirthYear).FirstToLower()]?.InnerText
-                            ?? throw new ArgumentNullException(nameof(Actor.BirthYear).FirstToLower()))
-                    };
-                    var tcs = node[nameof(Actor.TheatricalCharacters).FirstToLower()]?.ChildNodes;
-                    if (tcs is not null)
-                        foreach (XmlNode tc in tcs)
-                            actor.TheatricalCharacters.Add(new TheatricalCharacter() { Name = tc.InnerText });
-                    var performances = node[nameof(Actor.Performances).FirstToLower()]?.ChildNodes;
-                    if (performances is not null)
-                        foreach (XmlNode performance in performances)
-                        {
-                            IPerformance performanceConverted;
-                            if (performance.Name == nameof(Movie).FirstToLower())
-                            {
-                                performanceConverted = new Movie
-                                {
-                                    Year = ushort.Parse(performance[nameof(Movie.Year).FirstToLower()]?.InnerText
-                                        ?? throw new ArgumentNullException(nameof(Movie.Year).FirstToLower()))
-                                };
-                                var director = performance[nameof(Movie.Director).FirstToLower()];
-                                if (director is not null)
-                                {
-                                    ((Movie)performanceConverted).Director = new Person
-                                    {
-                                        FirstName = director[nameof(Person.FirstName).FirstToLower()]?.InnerText
-                                        ?? throw new ArgumentNullException(
-                                            nameof(Person.FirstName).FirstToLower()),
-                                        LastName = director[nameof(Person.LastName).FirstToLower()]?.InnerText
-                                        ?? throw new ArgumentNullException(nameof(Person.LastName).FirstToLower()),
-                                        Patronymic = director[nameof(Person.Patronymic).FirstToLower()]?.InnerText,
-                                        BirthYear = ushort.Parse(director[nameof(Person.BirthYear).FirstToLower()]?
-                                            .InnerText ?? throw new ArgumentNullException(
-                                                nameof(Person.BirthYear).FirstToLower()))
-                                    };
-                                }
-                            }
-                            else
-                                performanceConverted = new Spectacle();
-                            performanceConverted.Name = performance[nameof(IPerformance.Name).FirstToLower()]?.InnerText
-                                        ?? throw new ArgumentNullException(nameof(IPerformance.Name).FirstToLower());
-                            var genres = performance[nameof(Movie.Director).FirstToLower()];
-                            if (genres is not null)
-                                foreach (XmlNode genre in genres)
-                                    performanceConverted.Genres.Add(new Genre { Name = genre.InnerText });
-                        }
-                    Actors.Add(actor);
+                    var method = typeof(Context).GetMethod(nameof(Context.Read), 
+                        BindingFlags.NonPublic | BindingFlags.Instance);
+                    var generic = method!.MakeGenericMethod(innerType);
+                    object[] parameters = new object[] { item, innerType.Name, true };
+                    var itemConverted = generic.Invoke(this, parameters);
+                    enumerable!.GetType().GetMethod("Add")!.Invoke(enumerable, new[] { itemConverted });
                 }
+                return (T?)enumerable;
+            }
+            else
+            {
+                object obj = (T)Activator.CreateInstance(type)!;
+                foreach (var prop in type.GetProperties())
+                {
+                    if (!prop.CustomAttributes.Any(a => a.AttributeType == typeof(XmlIgnoreAttribute)))
+                    {
+                        var method = typeof(Context).GetMethod(nameof(Context.Read), BindingFlags.NonPublic | BindingFlags.Instance);
+                        var generic = method!.MakeGenericMethod(prop.PropertyType);
+                        object?[] parameters = new object?[] { node[prop.Name.FirstToLower()], prop.PropertyType.ToString(), true };
+                        var itemConverted = generic.Invoke(this, parameters);
+                        if (itemConverted != default)
+                            prop.SetValue(obj, itemConverted, null);
+                    }
+                }
+                return (T?)obj;
             }
         }
 
@@ -104,7 +87,7 @@ namespace Backend
             WriteElement(writer, Actors, nameof(Actors));
         }
 
-        private void WriteElement(XmlWriter writer, object? element, string name)
+        private static void WriteElement(XmlWriter writer, object? element, string name)
         {
             if (element == null)
                 return;
