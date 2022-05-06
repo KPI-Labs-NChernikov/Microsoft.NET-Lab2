@@ -4,12 +4,13 @@ using System.Xml.Linq;
 using Backend.Extensions;
 using System.Xml.Serialization;
 using System.Reflection;
+using Backend.Interfaces;
 
 namespace Backend
 {
-    public class Context
+    public class Context : IContext<Actor>
     {
-        public ICollection<Actor> Actors { get; set; } = new List<Actor>();
+        public ICollection<Actor> Items { get; set; } = new List<Actor>();
 
         public XDocument Document 
         { 
@@ -26,7 +27,7 @@ namespace Backend
         {
             XmlDocument doc = new();
             doc.Load(stream);
-            Actors = Read<List<Actor>>(doc.DocumentElement, nameof(Actors), true) ?? new List<Actor>();
+            Items = Read<List<Actor>>(doc.DocumentElement, nameof(Items), true) ?? new List<Actor>();
         }
 
         private T? Read<T>(XmlNode? node, string name, bool isNullable)
@@ -84,7 +85,7 @@ namespace Backend
                 Indent = true
             };
             using XmlWriter writer = XmlWriter.Create(stream, settings);
-            WriteElement(writer, Actors, nameof(Actors));
+            WriteElement(writer, Items, nameof(Items));
         }
 
         private static void WriteElement(XmlWriter writer, object? element, string name)

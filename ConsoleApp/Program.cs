@@ -1,4 +1,5 @@
 ﻿using Backend;
+using Backend.Interfaces;
 using Backend.Models;
 
 Console.WriteLine("Hello, World!");
@@ -77,7 +78,7 @@ var actors = new List<Actor>
                 }
 };
 
-var context = new Context();
+IContext<Actor> context = new Context();
 context.Load("hello.xml");
 var temp = context.Document;
 context.Save("hello.xml");
