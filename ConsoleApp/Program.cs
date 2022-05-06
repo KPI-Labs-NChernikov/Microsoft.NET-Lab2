@@ -1,5 +1,4 @@
-﻿// See https://aka.ms/new-console-template for more information
-using Backend;
+﻿using Backend;
 using Backend.Models;
 
 Console.WriteLine("Hello, World!");

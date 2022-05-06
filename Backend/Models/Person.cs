@@ -1,15 +1,19 @@
-﻿using System.Xml.Serialization;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Xml.Serialization;
 
 namespace Backend.Models
 {
     public class Person
     {
+        [Required(AllowEmptyStrings = false)]
         public string FirstName { get; set; } = string.Empty;
 
+        [Required(AllowEmptyStrings = false)]
         public string LastName { get; set; } = string.Empty;
 
         public string? Patronymic { get; set; }
 
+        [Required]
         public ushort BirthYear { get; set; }
 
         [XmlIgnore]

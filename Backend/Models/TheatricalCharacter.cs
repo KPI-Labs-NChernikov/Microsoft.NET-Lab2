@@ -1,7 +1,10 @@
-﻿namespace Backend.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Backend.Models
 {
     public class TheatricalCharacter
     {
+        [Required(AllowEmptyStrings = false)]
         public string Name { get; set; } = string.Empty;
 
         public override string ToString() => Name;

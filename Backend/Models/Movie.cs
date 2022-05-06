@@ -1,16 +1,21 @@
 ﻿using Backend.Comparers;
 using Backend.Interfaces;
+using System.ComponentModel.DataAnnotations;
 
 namespace Backend.Models
 {
     public class Movie : IPerformance
     {
+        [Required(AllowEmptyStrings = false)]
         public string Name { get; set; } = string.Empty;
 
+        [Required]
         public ushort Year { get; set; }
 
+        [Required]
         public ICollection<Genre> Genres { get; set; } = new List<Genre>();
 
+        [Required]
         public Person Director { get; set; } = new Person();
 
         private readonly IEnumarebleEqualityComparer<Genre> _genreComparer = new();

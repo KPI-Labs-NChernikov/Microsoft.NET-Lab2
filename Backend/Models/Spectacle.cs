@@ -1,12 +1,15 @@
 ﻿using Backend.Comparers;
 using Backend.Interfaces;
+using System.ComponentModel.DataAnnotations;
 
 namespace Backend.Models
 {
     public class Spectacle : IPerformance
     {
+        [Required(AllowEmptyStrings = false)]
         public string Name { get; set; } = string.Empty;
 
+        [Required]
         public ICollection<Genre> Genres { get; set; } = new List<Genre>();
 
         private readonly IEnumarebleEqualityComparer<Genre> _genreComparer = new();
