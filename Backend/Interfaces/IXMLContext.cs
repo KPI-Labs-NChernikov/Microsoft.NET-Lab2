@@ -2,7 +2,7 @@
 
 namespace Backend.Interfaces
 {
-    public interface IXMLContext<T>
+    public interface IXmlContext<T>
     {
         ICollection<T> Items { get; set; }
 

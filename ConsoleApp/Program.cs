@@ -1,6 +1,7 @@
 ﻿using Backend;
 using Backend.Interfaces;
 using Backend.Models;
+using Business.Services;
 
 Console.WriteLine("Hello, World!");
 var actors = new List<Actor>
@@ -78,7 +79,9 @@ var actors = new List<Actor>
                 }
 };
 
-IXMLContext<Actor> context = new XMLContext();
+IXmlContext<Actor> context = new XmlContext();
 context.Load("hello.xml");
 var temp = context.Document;
+var service = new ActorService(context);
+service.Add(actors.First());
 context.Save("hello.xml");
