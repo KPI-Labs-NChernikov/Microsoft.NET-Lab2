@@ -8,7 +8,7 @@ using Backend.Interfaces;
 
 namespace Backend
 {
-    public class Context : IContext<Actor>
+    public class XMLContext : IXMLContext<Actor>
     {
         public ICollection<Actor> Items { get; set; } = new List<Actor>();
 
@@ -44,7 +44,7 @@ namespace Backend
                 var enumerable = Activator.CreateInstance(listType);
                 foreach (XmlNode item in node)
                 {
-                    var method = typeof(Context).GetMethod(nameof(Context.Read), 
+                    var method = typeof(XMLContext).GetMethod(nameof(XMLContext.Read), 
                         BindingFlags.NonPublic | BindingFlags.Instance);
                     var generic = method!.MakeGenericMethod(innerType);
                     object[] parameters = new object[] { item, innerType.Name, true };
@@ -60,7 +60,7 @@ namespace Backend
                 {
                     if (!prop.CustomAttributes.Any(a => a.AttributeType == typeof(XmlIgnoreAttribute)))
                     {
-                        var method = typeof(Context).GetMethod(nameof(Context.Read), BindingFlags.NonPublic | BindingFlags.Instance);
+                        var method = typeof(XMLContext).GetMethod(nameof(XMLContext.Read), BindingFlags.NonPublic | BindingFlags.Instance);
                         var generic = method!.MakeGenericMethod(prop.PropertyType);
                         object?[] parameters = new object?[] { node[prop.Name.FirstToLower()], prop.PropertyType.ToString(), true };
                         var itemConverted = generic.Invoke(this, parameters);

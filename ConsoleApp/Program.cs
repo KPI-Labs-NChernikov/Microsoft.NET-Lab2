@@ -78,7 +78,7 @@ var actors = new List<Actor>
                 }
 };
 
-IContext<Actor> context = new Context();
+IXMLContext<Actor> context = new XMLContext();
 context.Load("hello.xml");
 var temp = context.Document;
 context.Save("hello.xml");
