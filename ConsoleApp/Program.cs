@@ -18,7 +18,8 @@ var form = new StringForm
     Name = "actor's name",
     ErrorMessage = "the actor's name shouldn't be empty"
 };
-form.GetString();
+Console.WriteLine($"You entered: {form.GetString()}");
+Console.ResetColor();
 //var fileName = "actors.xml";
 //IXmlContext<Actor> context = new XmlContext();
 //context.Load(fileName);

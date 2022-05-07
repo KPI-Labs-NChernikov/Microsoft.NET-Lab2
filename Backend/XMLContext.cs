@@ -98,7 +98,7 @@ namespace Backend
                 Indent = true
             };
             using XmlWriter writer = XmlWriter.Create(stream, settings);
-            WriteElement(writer, Items, nameof(Items));
+            WriteElement(writer, Items, "Actors");
         }
 
         private static void WriteElement(XmlWriter writer, object? element, string name, TypeParams typeParams = default)
@@ -124,7 +124,11 @@ namespace Backend
                         innerType = typeof(object);
                     }
                     foreach (var item in enumerable)
-                        WriteElement(writer, item, item.GetType().Name, new TypeParams() { Type = innerType, WriteType = false });
+                    {
+                        var itemType = item.GetType();
+                        WriteElement(writer, item, innerType.Name, new TypeParams()
+                        { Type = itemType, WriteType = innerType != itemType });
+                    }
                     writer.WriteEndElement();
                 }
             }
