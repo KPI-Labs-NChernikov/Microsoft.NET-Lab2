@@ -61,10 +61,11 @@ namespace Backend
             {
                 if (node[typeName] != null)
                     type = Type.GetType(node[typeName]!.InnerText)!;
-                if (type.IsInterface)
+                if (type.IsInterface || type.IsAbstract)
                 {
                     throw new InvalidOperationException("Unable to create an object from the node.\n" +
-                        "More likely, your type is an interface and not <type> child node was specified");
+                        "More likely, your type is an interface or an abstract class" +
+                        " and no <type> child node was specified");
                 }
                 object obj = (T)Activator.CreateInstance(type)!;
                 foreach (var prop in type.GetProperties())
