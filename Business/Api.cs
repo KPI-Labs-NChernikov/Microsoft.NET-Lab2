@@ -7,9 +7,9 @@ namespace Business
 {
     public class Api : IApi
     {
-        public IActorService ActorService { get; private set; }
+        public IActorService ActorService { get; }
 
-        public ActorInfoService ActorInfoService { get; private set; }
+        public ActorInfoService ActorInfoService { get; }
 
         private readonly IXmlContext<Actor> _context;
 

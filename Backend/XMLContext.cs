@@ -5,6 +5,8 @@ using Backend.Extensions;
 using System.Xml.Serialization;
 using System.Reflection;
 using Backend.Interfaces;
+using Backend.Attributes;
+using Backend.Other;
 
 namespace Backend
 {
@@ -29,6 +31,8 @@ namespace Backend
             doc.Load(stream);
             Items = Read<List<Actor>>(doc.DocumentElement, nameof(Items), true) ?? new List<Actor>();
         }
+
+        private const string typeName = "_type";
 
         private T? Read<T>(XmlNode? node, string name, bool isNullable)
         {
@@ -55,14 +59,23 @@ namespace Backend
             }
             else
             {
+                if (node[typeName] != null)
+                    type = Type.GetType(node[typeName]!.InnerText)!;
+                if (type.IsInterface)
+                {
+                    throw new InvalidOperationException("Unable to create an object from the node.\n" +
+                        "More likely, your type is an interface and not <type> child node was specified");
+                }
                 object obj = (T)Activator.CreateInstance(type)!;
                 foreach (var prop in type.GetProperties())
                 {
                     if (!prop.CustomAttributes.Any(a => a.AttributeType == typeof(XmlIgnoreAttribute)))
                     {
-                        var method = typeof(XmlContext).GetMethod(nameof(XmlContext.Read), BindingFlags.NonPublic | BindingFlags.Instance);
+                        var method = typeof(XmlContext).GetMethod(nameof(XmlContext.Read), 
+                            BindingFlags.NonPublic | BindingFlags.Instance);
                         var generic = method!.MakeGenericMethod(prop.PropertyType);
-                        object?[] parameters = new object?[] { node[prop.Name.FirstToLower()], prop.PropertyType.ToString(), true };
+                        object?[] parameters = new object?[] 
+                        { node[prop.Name.FirstToLower()], prop.PropertyType.ToString(), true };
                         var itemConverted = generic.Invoke(this, parameters);
                         if (itemConverted != default)
                             prop.SetValue(obj, itemConverted, null);
@@ -88,29 +101,52 @@ namespace Backend
             WriteElement(writer, Items, nameof(Items));
         }
 
-        private static void WriteElement(XmlWriter writer, object? element, string name)
+        private static void WriteElement(XmlWriter writer, object? element, string name, TypeParams typeParams = default)
         {
             if (element == null)
                 return;
-            if (element.GetType().IsPrimitive || element.GetType().IsEnum || element.GetType() == typeof(string))
+            if (typeParams.Type == null)
+                typeParams.Type = element.GetType();
+            if (typeParams.Type.IsPrimitive || typeParams.Type.IsEnum || typeParams.Type == typeof(string))
                 writer.WriteElementString(name.FirstToLower(), element.ToString());
             else if (element is IEnumerable<object> enumerable)
             {
                 if (enumerable.Any())
                 {
                     writer.WriteStartElement(name.FirstToLower());
+                    Type innerType;
+                    try
+                    {
+                        innerType = enumerable.GetType().GetGenericArguments().First();
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        innerType = typeof(object);
+                    }
                     foreach (var item in enumerable)
-                        WriteElement(writer, item, item.GetType().Name);
+                        WriteElement(writer, item, item.GetType().Name, new TypeParams() { Type = innerType, WriteType = false });
                     writer.WriteEndElement();
                 }
             }
             else
             {
                 writer.WriteStartElement(name.FirstToLower());
-                foreach (var prop in element.GetType().GetProperties())
+                if (typeParams.WriteType)
+                    writer.WriteElementString(typeName, element.GetType().ToString());
+                var props = typeParams.Type.GetProperties();
+                foreach (var prop in typeParams.Type.GetProperties())
                 {
-                    if (!prop.CustomAttributes.Any(a => a.AttributeType == typeof(XmlIgnoreAttribute)))
-                        WriteElement(writer, prop.GetValue(element), prop.Name);
+                    if (!prop.CustomAttributes.Any(a => a.AttributeType == typeof(XmlIgnoreAttribute)) 
+                        && prop.GetValue(element) is not null)
+                    {
+                        var ignoreInheritance = prop.CustomAttributes
+                            .Any(a => a.AttributeType == typeof(XmlIgnoreInheritanceAttribute));
+                        var innerType = ignoreInheritance
+                            ? prop.PropertyType : prop.GetValue(element)!.GetType();
+                        var writeType = prop.PropertyType.IsInterface || !ignoreInheritance;
+                        WriteElement(writer, prop.GetValue(element), prop.Name, 
+                            new TypeParams() { Type = innerType, WriteType = writeType });
+                    }
                 }
                 writer.WriteEndElement();
             }

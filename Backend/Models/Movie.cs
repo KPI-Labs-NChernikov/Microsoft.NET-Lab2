@@ -1,4 +1,5 @@
-﻿using Backend.Comparers;
+﻿using Backend.Attributes;
+using Backend.Comparers;
 using Backend.Interfaces;
 using System.ComponentModel.DataAnnotations;
 
@@ -16,6 +17,7 @@ namespace Backend.Models
         public ICollection<Genre> Genres { get; set; } = new List<Genre>();
 
         [Required]
+        [XmlIgnoreInheritance]
         public Person Director { get; set; } = new Person();
 
         private readonly IEnumarebleEqualityComparer<Genre> _genreComparer = new();
