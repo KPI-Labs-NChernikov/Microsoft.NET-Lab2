@@ -10,7 +10,7 @@ namespace ConsoleApp
 {
     public static class ApiContainer
     {
-        public static IApi Api { get; set; } = new Api(new XmlContext(), "actors.xml");
+        public static IApi Api { get; set; } = new Api(new XmlContext());
 
         public static void SeedData()
         {

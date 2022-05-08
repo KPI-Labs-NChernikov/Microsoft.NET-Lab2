@@ -12,8 +12,14 @@ namespace Backend
 {
     public class XmlContext : IXmlContext<Actor>
     {
+        /// <summary>
+        /// Content of the context. Any ICollection<Actor>
+        /// </summary>
         public ICollection<Actor> Items { get; set; } = new List<Actor>();
 
+        /// <summary>
+        /// XDocument for querying data using Linq to XML
+        /// </summary>
         public XDocument Document 
         { 
             get 
@@ -25,6 +31,16 @@ namespace Backend
             } 
         }
 
+        /// <summary>
+        /// Loads a document from a stream to the Items collection
+        /// </summary>
+        /// <param name="stream">Stream containing XML data</param>
+        /// <exception cref="XmlException">Thrown if any load or parse error occurs</exception>
+        /// <exception cref="MissingMethodException">
+        /// It is not possible to create an instance of the given type,
+        /// because it is an interface, an abstract class or doesn't have parameterless constructor
+        /// and no _type tag has been explicitly specified
+        /// </exception>
         public void Load(Stream stream)
         {
             XmlDocument doc = new();
@@ -86,12 +102,54 @@ namespace Backend
             }
         }
 
+        /// <summary>
+        /// Loads a document from a file to the Items collection
+        /// </summary>
+        /// <param name="fileName">Path to the file that contains XML data</param>
+        /// <exception cref="XmlException">Thrown if any load or parse error occurs</exception>
+        /// <exception cref="FileNotFoundException">Such a file does not exist</exception>
+        /// <exception cref="MissingMethodException">
+        /// It is not possible to create an instance of the given type,
+        /// because it is an interface, an abstract class or doesn't have parameterless constructor
+        /// and no _type tag has been explicitly specified
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// Path is an empty string (""), contains only white space, 
+        /// or contains one or more invalid characters.
+        /// -or- path refers to a non-file device, such as "con:", "com1:", "lpt1:", etc.
+        /// in an NTFS environment.
+        /// </exception>
+        /// <exception cref="NotSupportedException">
+        /// Path refers to a non-file device, such as "con:", "com1:", "lpt1:", etc. in a
+        /// non-NTFS environment.
+        /// </exception>
+        /// <exception cref="ArgumentNullException"> Path is null.</exception>
+        /// <exception cref="System.Security.SecurityException">
+        /// The caller does not have the required permission.
+        /// </exception>
+        /// <exception cref="DirectoryNotFoundException">
+        /// The specified path is invalid, such as being on an unmapped drive.
+        /// </exception>
+        /// <exception cref="PathTooLongException">
+        /// The specified path, file name, or both exceed the system-defined maximum length.
+        /// </exception>
         public void Load(string fileName)
         {
             using var fs = new FileStream(fileName, FileMode.Open);
             Load(fs);
         }
 
+        /// <summary>
+        /// Saves a Items' content to a given stream
+        /// </summary>
+        /// <param name="stream">Stream to which an items' content should be saved</param>
+        /// <exception cref="ArgumentNullException">Stream is null.</exception>
+        /// <exception cref="StackOverflowException">
+        /// More likely, your objects contains loop(s)
+        /// -or-
+        /// the property object type is derived from property's type, it contains loop(s)
+        /// and no attribute [XmlIgnoreInheritance] has been specified to such a property(ies)
+        /// </exception>
         public void Save(Stream stream)
         {
             XmlWriterSettings settings = new()
@@ -112,23 +170,23 @@ namespace Backend
                 writer.WriteElementString(name.FirstToLower(), element.ToString());
             else if (element is IEnumerable<object> enumerable)
             {
-                    writer.WriteStartElement(name.FirstToLower());
-                    Type innerType;
-                    try
-                    {
-                        innerType = enumerable.GetType().GetGenericArguments().First();
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        innerType = typeof(object);
-                    }
-                    foreach (var item in enumerable)
-                    {
-                        var itemType = item.GetType();
-                        WriteElement(writer, item, innerType.Name, new TypeParams()
-                        { Type = itemType, WriteType = innerType != itemType });
-                    }
-                    writer.WriteEndElement();
+                writer.WriteStartElement(name.FirstToLower());
+                Type innerType;
+                try
+                {
+                    innerType = enumerable.GetType().GetGenericArguments().First();
+                }
+                catch (InvalidOperationException)
+                {
+                    innerType = typeof(object);
+                }
+                foreach (var item in enumerable)
+                {
+                    var itemType = item.GetType();
+                    WriteElement(writer, item, innerType.Name, new TypeParams()
+                    { Type = itemType, WriteType = innerType != itemType });
+                }
+                writer.WriteEndElement();
             }
             else
             {
@@ -154,6 +212,37 @@ namespace Backend
             }
         }
 
+        /// <summary>
+        /// Saves a Items' content to a given stream
+        /// </summary>
+        /// <param name="fileName">File to which an items' content should be saved</param>
+        /// <exception cref="StackOverflowException">
+        /// More likely, your objects contains loop(s)
+        /// -or-
+        /// the property object type is derived from property's type, it contains loop(s)
+        /// and no attribute [XmlIgnoreInheritance] has been specified to such a property(ies)
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// Path is an empty string (""), contains only white space, 
+        /// or contains one or more invalid characters.
+        /// -or- path refers to a non-file device, such as "con:", "com1:", "lpt1:", etc.
+        /// in an NTFS environment.
+        /// </exception>
+        /// <exception cref="NotSupportedException">
+        /// Path refers to a non-file device, such as "con:", "com1:", "lpt1:", etc. in a
+        /// non-NTFS environment.
+        /// </exception>
+        /// <exception cref="ArgumentNullException"> Path is null.</exception>
+        /// <exception cref="System.Security.SecurityException">
+        /// The caller does not have the required permission.
+        /// </exception>
+        /// <exception cref="UnauthorizedAccessException">Path specifies a file that is read-only.</exception>
+        /// <exception cref="DirectoryNotFoundException">
+        /// The specified path is invalid, such as being on an unmapped drive.
+        /// </exception>
+        /// <exception cref="PathTooLongException">
+        /// The specified path, file name, or both exceed the system-defined maximum length.
+        /// </exception>
         public void Save(string fileName)
         {
             using var fs = new FileStream(fileName, FileMode.Create);

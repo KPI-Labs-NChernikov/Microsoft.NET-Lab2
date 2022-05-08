@@ -1,16 +1,12 @@
-﻿using Backend;
-using Backend.Interfaces;
+﻿using Backend.Interfaces;
 using Backend.Models;
-using Business;
 using ConsoleApp;
-using ConsoleApp.Data;
 using ConsoleApp.Helpers;
-using ConsoleApp.Interfaces;
 using ConsoleApp.Printers;
-using System.Xml;
 
 Console.ForegroundColor = ConsoleColor.DarkGreen;
 var api = ApiContainer.Api;
+api.SaveFile = "actors.xml";
 IXmlContext<Actor> context = api.Context;
 try
 {

@@ -1,6 +1,6 @@
 ﻿namespace Backend.Attributes
 {
-    [System.AttributeUsage(System.AttributeTargets.Property)]
-    public class XmlIgnoreInheritanceAttribute : System.Attribute
+    [AttributeUsage(AttributeTargets.Property)]
+    public class XmlIgnoreInheritanceAttribute : Attribute
     {    }
 }
