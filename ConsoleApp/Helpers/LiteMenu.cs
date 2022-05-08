@@ -4,7 +4,7 @@
     {
         public string? Name { get; set; }
 
-        public IEnumerable<(string Text, Action Action)> Items { get; set; } = new List<(string Text, Action Action)>();
+        public IEnumerable<(string Text, Action? Action)> Items { get; set; } = new List<(string Text, Action? Action)>();
 
         public void Print()
         {
