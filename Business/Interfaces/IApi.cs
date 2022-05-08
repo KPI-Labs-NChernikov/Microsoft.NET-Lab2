@@ -6,15 +6,15 @@ namespace Business.Interfaces
 {
     public interface IApi
     {
+        IXmlContext<Actor> Context { get; }
+
         IActorService ActorService { get; }
 
         ActorInfoService ActorInfoService { get; }
 
         bool IsSaved { get; set; }
 
-        Stream SaveStream { get; set; }
-
-        string? SaveFile { get; set; } 
+        string SaveFile { get; set; } 
 
         void Save();
     }

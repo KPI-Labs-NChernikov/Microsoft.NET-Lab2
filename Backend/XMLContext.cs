@@ -112,8 +112,6 @@ namespace Backend
                 writer.WriteElementString(name.FirstToLower(), element.ToString());
             else if (element is IEnumerable<object> enumerable)
             {
-                if (enumerable.Any())
-                {
                     writer.WriteStartElement(name.FirstToLower());
                     Type innerType;
                     try
@@ -131,7 +129,6 @@ namespace Backend
                         { Type = itemType, WriteType = innerType != itemType });
                     }
                     writer.WriteEndElement();
-                }
             }
             else
             {

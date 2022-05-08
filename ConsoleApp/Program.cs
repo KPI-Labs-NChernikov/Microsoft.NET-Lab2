@@ -1,28 +1,44 @@
 ﻿using Backend;
 using Backend.Interfaces;
 using Backend.Models;
+using Business;
 using ConsoleApp;
 using ConsoleApp.Data;
+using ConsoleApp.Helpers;
 using ConsoleApp.Interfaces;
+using System.Xml;
 
 Console.ForegroundColor = ConsoleColor.DarkGreen;
-var dialog = new Dialog
+var api = ApiContainer.Api;
+IXmlContext<Actor> context = api.Context;
+bool error = false;
+try
 {
-    YAction = () => Console.WriteLine("Hello world"),
-    Question = "Do you want to see hello message?"
-};
-dialog.Print();
-var form = new StringForm
+    context.Load(api.SaveFile);
+    api.IsSaved = true;
+}
+catch (FileNotFoundException)
 {
-    IsValid = (string? s) => !string.IsNullOrWhiteSpace(s),
-    Name = "actor's name",
-    ErrorMessage = "the actor's name shouldn't be empty"
-};
-Console.WriteLine($"You entered: {form.GetString()}");
+    Console.WriteLine("It seems as if your context is empty now");
+    ApiContainer.SeedData();
+}
+catch (XmlException exc)
+{
+    error = true;
+    HelperMethods.PrintErrorMessage(exc.Message);
+    HelperMethods.Continue();
+}
+if (!error)
+{
+    Console.Clear();
+    if (!api.IsSaved)
+    {
+        var dialog = new Dialog
+        {
+            Question = "You have some unsaved changes. Do you want to save them?",
+            YAction = ApiContainer.Save
+        };
+        dialog.Print();
+    }
+}
 Console.ResetColor();
-//var fileName = "actors.xml";
-//IXmlContext<Actor> context = new XmlContext();
-//context.Load(fileName);
-//IDataSeeder<Actor> seeder = new DataSeeder(context);
-//seeder.SeedData();
-//context.Save(fileName);

@@ -11,38 +11,21 @@ namespace Business
 
         public ActorInfoService ActorInfoService { get; }
 
-        private readonly IXmlContext<Actor> _context;
+        public IXmlContext<Actor> Context { get; }
 
         public bool IsSaved { get; set; }
 
-        public Api(IXmlContext<Actor> context)
+        public Api(IXmlContext<Actor> context, string saveFile)
         {
-            _context = context;
+            Context = context;
             ActorService = new ActorService(context);
             void changeSaved() { IsSaved = false; }
             ActorService.OnChange += changeSaved;
             ActorInfoService = new ActorInfoService(context);
-            using var stream = new MemoryStream();
-            _saveStream = stream;
+            SaveFile = saveFile;
         }
 
-        public Stream SaveStream
-        {
-            get
-            {
-                return _saveStream;
-            }
-            set
-            {
-                _saveStream = value ?? throw new ArgumentNullException(nameof(value));
-                _saveFile = null;
-                IsSaved = false;
-            }
-        }
-
-        private Stream _saveStream;
-
-        public string? SaveFile
+        public string SaveFile
         {
             get
             {
@@ -50,18 +33,18 @@ namespace Business
             }
             set
             {
-                _saveFile = value ?? throw new ArgumentNullException(nameof(value));
-                using var fs = new FileStream(_saveFile, FileMode.Create);
-                _saveStream = fs;
+                if (string.IsNullOrEmpty(value))
+                    throw new ArgumentNullException(nameof(value));
+                _saveFile = value;
                 IsSaved = false;
             }
         }
 
-        private string? _saveFile;
+        private string _saveFile = string.Empty;
 
         public void Save()
         {
-            _context.Save(SaveStream);
+            Context.Save(SaveFile);
             IsSaved = true;
         }
     }

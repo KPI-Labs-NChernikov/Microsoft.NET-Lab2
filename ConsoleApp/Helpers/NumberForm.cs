@@ -1,4 +1,4 @@
-﻿namespace ConsoleApp
+﻿namespace ConsoleApp.Helpers
 {
     public delegate bool TryParseHandler<T>(string? value, out T result);
     public class NumberForm<T> where T : struct, IComparable<T>
