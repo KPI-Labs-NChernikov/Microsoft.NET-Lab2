@@ -131,7 +131,7 @@ namespace ConsoleApp.Printers
             var performanceTypesMenu = new LiteMenu
             {
                 Name = "performance type",
-                Items = new (string, Action)[]
+                Items = new (string, Action?)[]
                 {
                     ("Movie", () => { item.Performance = AddMovie(); }),
                     ("Spectacle", () => { item.Performance = AddSpectacle(); })
