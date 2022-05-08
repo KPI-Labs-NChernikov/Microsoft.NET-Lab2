@@ -18,17 +18,16 @@ namespace Backend
         public ICollection<Actor> Items { get; set; } = new List<Actor>();
 
         /// <summary>
+        /// Generate from the Items collection and then returnes
         /// XDocument for querying data using Linq to XML
         /// </summary>
-        public XDocument Document 
-        { 
-            get 
-            {
-                using var stream = new MemoryStream();
-                Save(stream);
-                stream.Position = 0;
-                return XDocument.Load(stream);
-            } 
+        /// <returns>XDocument for querying data using Linq to XML that contains Items in the XML format</returns>
+        public XDocument GenerateXDocument()
+        {
+            using var stream = new MemoryStream();
+            Save(stream);
+            stream.Position = 0;
+            return XDocument.Load(stream);
         }
 
         /// <summary>

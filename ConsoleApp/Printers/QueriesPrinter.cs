@@ -1,4 +1,5 @@
-﻿using ConsoleApp.Helpers;
+﻿using Business.Services;
+using ConsoleApp.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,5 +46,7 @@ namespace ConsoleApp.Printers
                 Header = HelperMethods.GetHeader("Queries"),
                 Name = "query"
             };
+
+        public static ActorInfoService Service => ApiContainer.Api.ActorInfoService;
     }
 }

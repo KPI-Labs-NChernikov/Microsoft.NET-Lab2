@@ -10,9 +10,11 @@ namespace Backend.Interfaces
         ICollection<T> Items { get; set; }
 
         /// <summary>
+        /// Generate from the Items collection and then returnes
         /// XDocument for querying data using Linq to XML
         /// </summary>
-        XDocument Document { get; }
+        /// <returns>XDocument for querying data using Linq to XML that contains Items in the XML format</returns>
+        XDocument GenerateXDocument();
 
         /// <summary>
         /// Loads a document from a stream to the Items collection

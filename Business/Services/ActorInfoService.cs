@@ -1,15 +1,19 @@
 ﻿using Backend.Interfaces;
 using Backend.Models;
+using Business.Interfaces;
+using System.Xml.Linq;
 
 namespace Business.Services
 {
     public class ActorInfoService
     {
-        private readonly IXmlContext<Actor> _context;
+        public XDocumentHandler Handler { get; set; }
+
+        private XDocument Document => Handler.RequestXDocument();
 
         public ActorInfoService(IXmlContext<Actor> context)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context), "Context cannot be null");
+            Handler = new XDocumentHandler(context);
         }
     }
 }
