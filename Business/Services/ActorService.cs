@@ -41,6 +41,12 @@ namespace Business.Services
             OnChange?.Invoke();
         }
 
+        public void Clear()
+        {
+            _context.Items.Clear();
+            OnChange?.Invoke();
+        }
+
         public IEnumerable<Actor> GetAll() => _context.Items;
     }
 }

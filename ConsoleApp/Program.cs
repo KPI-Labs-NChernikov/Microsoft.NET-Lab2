@@ -6,12 +6,12 @@ using ConsoleApp;
 using ConsoleApp.Data;
 using ConsoleApp.Helpers;
 using ConsoleApp.Interfaces;
+using ConsoleApp.Printers;
 using System.Xml;
 
 Console.ForegroundColor = ConsoleColor.DarkGreen;
 var api = ApiContainer.Api;
 IXmlContext<Actor> context = api.Context;
-bool error = false;
 try
 {
     context.Load(api.SaveFile);
@@ -21,24 +21,35 @@ catch (FileNotFoundException)
 {
     Console.WriteLine("It seems as if your context is empty now");
     ApiContainer.SeedData();
-}
-catch (XmlException exc)
-{
-    error = true;
-    HelperMethods.PrintErrorMessage(exc.Message);
     HelperMethods.Continue();
 }
-if (!error)
+
+IEnumerable<(string, Action)> mainMenuItems = new List<(string, Action)>()
 {
+    ("Show all", ActorPrinter.ShowAll),
+    ("Add", ActorPrinter.Add),
+    ("Delete", ActorPrinter.Delete),
+    ("Clear", ActorPrinter.Clear),
+    ("Save", ActorPrinter.Save),
+    ("To queries", () => QueriesPrinter.Menu.Print()),
+};
+var mainMenu = new Menu
+{
+    Header = HelperMethods.GetHeader("Main"),
+    Name = "command",
+    Items = mainMenuItems
+};
+mainMenu.Print();
+
+if (!api.IsSaved)
+{
+    Console.ForegroundColor = ConsoleColor.DarkGreen;
     Console.Clear();
-    if (!api.IsSaved)
+    var dialog = new Dialog
     {
-        var dialog = new Dialog
-        {
-            Question = "You have some unsaved changes. Do you want to save them?",
-            YAction = ApiContainer.Save
-        };
-        dialog.Print();
-    }
+        Question = "You have some unsaved changes. Do you want to save them?",
+        YAction = ApiContainer.Save
+    };
+    dialog.Print();
+    Console.ResetColor();
 }
-Console.ResetColor();

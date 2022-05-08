@@ -23,7 +23,6 @@ namespace ConsoleApp
                     var seeder = new DataSeeder(Api.Context);
                     seeder.SeedData();
                     Console.WriteLine("The test data has been seeded successfully.");
-                    HelperMethods.Continue();
                 }
             };
             dialog.Print();

@@ -9,5 +9,7 @@ namespace Business.Interfaces
         void Add(Actor actor);
 
         void Delete(int index);
+
+        public void Clear();
     }
 }

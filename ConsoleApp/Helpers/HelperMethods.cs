@@ -28,5 +28,11 @@
             Console.WriteLine($"Please, enter the {toFind}: ");
             return Console.ReadLine();
         }
+
+        internal static string GetHeader(string subtype)
+        {
+            return $"22. Actors and their filmographies: {subtype}{Environment.NewLine}" +
+                    "Nikita Chernikov, IS-02";
+        }
     }
 }

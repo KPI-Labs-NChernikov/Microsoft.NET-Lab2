@@ -8,7 +8,7 @@
 
         public string? ErrorMessage { get; set; }
 
-        public string? GetString()
+        public string GetString()
         {
             var initialColor = Console.ForegroundColor;
             var name = !string.IsNullOrEmpty(Name) ? Name : "string";
@@ -29,7 +29,7 @@
                 }
             }
             while (!isValid);
-            return entered;
+            return entered ?? string.Empty;
         }
     }
 }
