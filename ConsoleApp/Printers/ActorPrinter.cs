@@ -105,8 +105,15 @@ namespace ConsoleApp.Printers
             dialog.Question = "Do you want to add a filmography item (for ex., film and actor's role in it)?";
             dialog.YAction = () => AddFilmographyItem(actor.Filmography);
             dialog.Print();
-            Service.Add(actor);
-            Console.WriteLine($"Actor {actor.FullName} has been successfully added");
+            try
+            {
+                Service.Add(actor);
+                Console.WriteLine($"Actor {actor.FullName} has been successfully added");
+            }
+            catch (ArgumentException exc)
+            {
+                HelperMethods.PrintErrorMessage(exc.Message);
+            }
             HelperMethods.Continue();
         }
 
