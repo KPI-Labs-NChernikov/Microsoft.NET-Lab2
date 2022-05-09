@@ -75,6 +75,11 @@ namespace ConsoleApp.Data
                 {
                     Name = "The Master and Margarita",
                     Genres = new List<Genre>{ genres[3]}
+                },
+                new Spectacle()    // 3
+                { 
+                    Name = "Forever alive",
+                    Genres = new List<Genre>{genres[3]}
                 }
             };
 
@@ -394,9 +399,30 @@ namespace ConsoleApp.Data
                             IsMain = true
                         }
                     }
+                },
+                new Actor() //8
+                {
+                    FirstName = "Vasyl",
+                    LastName = "Kukharsky",
+                    BirthYear = 1981,
+                    Filmography= new List<FilmographyItem>
+                    {
+                        new FilmographyItem
+                        {
+                            Performance= spectacles[3],
+                            Role = "Borys",
+                            IsMain = true
+                        },
+                        new FilmographyItem
+                        {
+                            Performance= spectacles[3],
+                            Role = "Mark",
+                            IsMain = true
+                        }
+                    }
                 }
             };
-            var actor = (Actor)directors[0];        // 8 (as actor)
+            var actor = (Actor)directors[0];        // 9 (as actor)
             actor.Filmography = new List<FilmographyItem>
             {
                 new FilmographyItem

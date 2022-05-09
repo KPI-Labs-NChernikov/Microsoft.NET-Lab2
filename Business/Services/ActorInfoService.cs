@@ -176,7 +176,9 @@ namespace Business.Services
                        Genres = spec
                            .Descendants("genre")
                            .Select(g => new Genre { Name = g.Value }).ToList()
-                   };
+                   } into converted
+                   group converted by converted into g
+                   select g.Key;
         }
 
         /// <summary>
@@ -245,6 +247,7 @@ namespace Business.Services
         /// sorted by film year descending</returns>
         public IEnumerable<Movie> FindMoviesByDirectorName(string name)
         {
+            // Use Ancestors()!!!
             throw new NotImplementedException();
         }
 
@@ -269,15 +272,29 @@ namespace Business.Services
         }
 
         /// <summary>
-        /// 15) Find spectacles of genre that name starts with $nameStart
+        /// 15) Find spectacles of the specific genre
         /// </summary>
-        /// <param name="nameStart"></param>
-        /// <returns>IEnumerable of SpectacleExtended that contains spectacles of genre (with genre object)
-        /// that name starts with $nameStart</returns>
-        public IEnumerable<Spectacle> FindSpectaclesByGenreNameStart(string nameStart)
+        /// <param name="genre"></param>
+        /// <returns>IEnumerable of Spectacle that contains spectacles of $genre</returns>
+        public IEnumerable<Spectacle> FindSpectaclesByGenre(string? genre)
         {
-            // Use Ancestors()!!!
-            throw new NotImplementedException();
+            return Document
+                .Descendants("genre")
+                .Where(g => g!.Value.Trim().ToLower() == genre?.Trim().ToLower()
+                    && g.Ancestors("performance").First().Element("_type")!.Value == typeof(Spectacle).ToString())
+                .Select(g =>
+                {
+                    var performance = g.Ancestors("performance");
+                    return new Spectacle
+                    {
+                        Name = performance.Elements("name")
+                                  .First().Value,
+                        Genres = performance
+                                  .Descendants("genre")
+                                  .Select(t => new Genre { Name = t.Value }).ToList()
+                    };
+                })
+                .Distinct();
         }
     }
 }

@@ -37,7 +37,7 @@ namespace ConsoleApp.Printers
                 null!),
                 ("Get genres with quantity of movies and spectacles of them. " +
                 "Sort by quantity of movies desc., then - spectacles desc.", null!),
-                ("Find spectacles of genre by start of the name", null!)
+                ("Find spectacles of the specific genre", FindSpectaclesByGenre)
             };
 
         public static Menu Menu =>
@@ -121,6 +121,22 @@ namespace ConsoleApp.Printers
         {
             var result = Service.GetSpectacles();
             HelperMethods.PrintHeader("Spectacles:");
+            foreach (var spectacle in result)
+            {
+                ActorPrinter.PrintSpectacle(spectacle);
+                Console.WriteLine();
+            }
+            HelperMethods.Continue();
+        }
+
+        public static void FindSpectaclesByGenre()
+        {
+            HelperMethods.PrintHeader("Find spectacles by genre");
+            var name = HelperMethods.Search("genre's name");
+            var result = Service.FindSpectaclesByGenre(name);
+            Console.Clear();
+            HelperMethods.PrintHeader("Find spectacles by genre");
+            HelperMethods.PrintHeader($"Results for \"{name}\":");
             foreach (var spectacle in result)
             {
                 ActorPrinter.PrintSpectacle(spectacle);
