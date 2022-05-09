@@ -15,31 +15,34 @@ namespace ConsoleApp.Printers
             var result = Service.GetAll();
             HelperMethods.PrintHeader("Show all");
             foreach (var actor in result)
+                PrintActorWithFilmography(actor);
+            HelperMethods.Continue();
+        }
+
+        public static void PrintActorWithFilmography(Actor actor)
+        {
+            PrintActor(actor);
+            Console.WriteLine("Filmography:");
+            foreach (var item in actor.Filmography)
             {
-                PrintActor(actor);
-                Console.WriteLine("Filmography:");
-                foreach (var item in actor.Filmography)
+                Console.WriteLine($"\t{item.Performance.Name}");
+                Console.Write($"\tRole: {item.Role}");
+                if (item.IsMain)
+                    Console.Write(" (main)");
+                Console.WriteLine();
+                Console.WriteLine($"\t{item.Performance.GetType().Name}:");
+                var indent = "\t\t";
+                if (item.Performance.GetType() == typeof(Movie))
                 {
-                    Console.WriteLine($"\t{item.Performance.Name}");
-                    Console.Write($"\tRole: {item.Role}");
-                    if (item.IsMain)
-                        Console.Write(" (main)");
-                    Console.WriteLine();
-                    Console.WriteLine($"\t{item.Performance.GetType().Name}:");
-                    var indent = "\t\t";
-                    if (item.Performance.GetType() == typeof(Movie))
-                    {
-                        PrintMovie((Movie)item.Performance, indent);
-                    }
-                    else
-                    {
-                        PrintSpectacle((Spectacle)item.Performance, indent);
-                    }
-                    Console.WriteLine();
+                    PrintMovie((Movie)item.Performance, indent);
+                }
+                else
+                {
+                    PrintSpectacle((Spectacle)item.Performance, indent);
                 }
                 Console.WriteLine();
             }
-            HelperMethods.Continue();
+            Console.WriteLine();
         }
 
         public static void PrintActor(Actor actor)

@@ -13,7 +13,6 @@ namespace ConsoleApp.Data
             Context = context ?? throw new ArgumentNullException(nameof(context), "Context cannot be null");
         }
 
-        // TODO!!!
         public void SeedData()
         {
             var genres = new List<Genre>()
@@ -180,6 +179,13 @@ namespace ConsoleApp.Data
                     Year = 2003,
                     Director = directors[1],
                     Genres = new List<Genre> { genres[0] }
+                },
+                new Movie() //7
+                {
+                    Name = "The Mexican",
+                    Year = 2001,
+                    Director = directors[1],
+                    Genres = new List<Genre> { genres[9], genres[8] }
                 }
             };
 
@@ -302,6 +308,15 @@ namespace ConsoleApp.Data
                     Patronymic = "Bradley",
                     BirthYear = 1963,
                     TheatricalCharacters = new List<TheatricalCharacter> { characters[4] },
+                    Filmography = new List<FilmographyItem>
+                    {
+                        new FilmographyItem
+                        {
+                            Performance = movies[7],
+                            Role = "Jerry Welbach",
+                            IsMain = true
+                        }
+                    }
                 },
                 new Actor() //4
                 {
