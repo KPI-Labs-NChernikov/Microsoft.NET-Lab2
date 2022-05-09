@@ -27,12 +27,13 @@ namespace Business
         public Api(IXmlContext<Actor> context)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
-            ActorInfoService = new ActorInfoService(context);
+            var handler = new XDocumentHandler(context);
+            ActorInfoService = new ActorInfoService(handler);
             ActorService = new ActorService(context);
             void changeSaved() 
             { 
                 IsSaved = false;
-                ActorInfoService.Handler.NeedsRegeneration = true;
+                handler.NeedsRegeneration = true;
             }
             ActorService.OnChange += changeSaved;
         }

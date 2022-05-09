@@ -1,10 +1,11 @@
 ﻿using Backend.Interfaces;
 using Backend.Models;
+using Business.Interfaces;
 using System.Xml.Linq;
 
 namespace Business.Services
 {
-    public class XDocumentHandler
+    public class XDocumentHandler : IXDocumentHandler
     {
         internal bool NeedsRegeneration { get; set; } = true;
 

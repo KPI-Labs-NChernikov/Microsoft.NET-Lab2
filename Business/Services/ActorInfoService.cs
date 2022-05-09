@@ -7,13 +7,13 @@ namespace Business.Services
 {
     public class ActorInfoService
     {
-        public XDocumentHandler Handler { get; set; }
+        private readonly IXDocumentHandler _handler;
 
-        private XDocument Document => Handler.RequestXDocument();
+        protected XDocument Document => _handler.RequestXDocument();
 
-        public ActorInfoService(IXmlContext<Actor> context)
+        public ActorInfoService(IXDocumentHandler handler)
         {
-            Handler = new XDocumentHandler(context);
+            _handler = handler ?? throw new ArgumentNullException(nameof(handler));
         }
     }
 }
