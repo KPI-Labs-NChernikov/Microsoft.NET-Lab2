@@ -270,7 +270,12 @@ namespace Business.Services
         /// <returns>IEnumerable of Genre with genres that were used both in movies and spectacles</returns>
         public IEnumerable<Genre> GetUniversalGenres()
         {
-            throw new NotImplementedException();
+            var getGenresOfType = (Type type) => Document
+                .Descendants("genre")
+                .Where(g => g.Ancestors("performance").First().Element("_type")!.Value == type.ToString())
+                .Select(g => new Genre { Name = g.Value });
+            return getGenresOfType(typeof(Movie))
+                .Intersect(getGenresOfType(typeof(Spectacle)));
         }
 
         /// <summary>
@@ -279,7 +284,29 @@ namespace Business.Services
         /// <returns>IEnumerable of Actor that contains actors that were directors too, sorted by year of birth</returns>
         public IEnumerable<ActorReduced> GetActorsDirectors()
         {
-            throw new NotImplementedException();
+            return Document
+                .Descendants("actor")
+                .Select(a => new ActorReduced
+                {
+                    FirstName = a.Element("firstName")!.Value,
+                    LastName = a.Element("lastName")!.Value,
+                    Patronymic = a.Element("patronymic")?.Value,
+                    BirthYear = ushort.Parse(a.Element("birthYear")!.Value),
+                    TheatricalCharacters = a.Descendants("theatricalCharacter")
+                            .Select(t => new TheatricalCharacter { Name = t.Value }).ToList()
+                })
+                .Select(a => (Person)a)
+                .Intersect(Document
+                    .Descendants("director")
+                    .Select(a => new Person
+                    {
+                        FirstName = a.Element("firstName")!.Value,
+                        LastName = a.Element("lastName")!.Value,
+                        Patronymic = a.Element("patronymic")?.Value,
+                        BirthYear = ushort.Parse(a.Element("birthYear")!.Value)
+                    }))
+                .Select(a => (ActorReduced)a)
+                .OrderBy(a => a.BirthYear);
         }
 
         /// <summary>

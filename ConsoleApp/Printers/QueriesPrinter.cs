@@ -22,9 +22,9 @@ namespace ConsoleApp.Printers
                 ("Get top-N actors. Sort by quantity of main roles both in movies and speactacles.",
                 GetTopMainRolesPopularActors),
                 ("Find actors by fullname", FindActorByName),
-                ("Get genres that were used both in movies and spectacles", null!),
+                ("Get genres that were used both in movies and spectacles", GetUniversalGenres),
                 ("Get all actors that are directors too. Sort by year of birth",
-                null!),
+                GetActorsDirectors),
                 ("TODO", null!),
                 ("Find films by director's full name. Sort by film year descending",
                 null!),
@@ -192,6 +192,29 @@ namespace ConsoleApp.Printers
             foreach (var actor in result)
             {
                 ActorPrinter.PrintActor((Actor)actor);
+                Console.WriteLine();
+            }
+            HelperMethods.Continue();
+        }
+
+        public static void GetUniversalGenres()
+        {
+            var result = Service.GetUniversalGenres();
+            HelperMethods.PrintHeader("Genres for both movies and spectacles:");
+            foreach (var genre in result)
+                Console.WriteLine($"{genre.Name}{Environment.NewLine}");
+            HelperMethods.Continue();
+        }
+
+        public static void GetActorsDirectors()
+        {
+            var result = Service.GetActorsDirectors();
+            HelperMethods.PrintHeader("Actors that were directors too:");
+            foreach (var actor in result)
+            {
+                Console.WriteLine($"Name: {actor.FullName}");
+                Console.WriteLine($"Year of birth: {actor.BirthYear}");
+                Console.WriteLine($"Theatrical character (as actor): {string.Join("; ", actor.TheatricalCharacters)}");
                 Console.WriteLine();
             }
             HelperMethods.Continue();
