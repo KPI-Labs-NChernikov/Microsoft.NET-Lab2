@@ -23,13 +23,12 @@ namespace ConsoleApp.Printers
                 GetTopMainRolesPopularActors),
                 ("Find actors by fullname", FindActorByName),
                 ("Get genres that were used both in movies and spectacles", GetUniversalGenres),
-                ("Get all actors that are directors too. Sort by year of birth",
-                GetActorsDirectors),
+                ("Get all actors that are directors too. Sort by year of birth", GetActorsDirectors),
                 ("Find all actors that have a certain theatrical character", FindActorsByTheatricalCharacter),
                 ("Find films by director's full name. Sort by film year descending",
-                null!),
+                FindMoviesByDirectorName),
                 ("Find all films and spectacles by name. Group by type - spectacle or movie",
-                null!),
+                FindPerformancesByName),
                 ("Get genres with quantity of movies and spectacles of them. " +
                 "Sort by quantity of movies desc., then - spectacles desc.", null!),
                 ("Find spectacles of the specific genre", FindSpectaclesByGenre)
@@ -235,6 +234,48 @@ namespace ConsoleApp.Printers
             foreach (var actor in result)
             {
                 ActorPrinter.PrintActorWithFilmography(actor);
+                Console.WriteLine();
+            }
+            HelperMethods.Continue();
+        }
+
+        public static void FindMoviesByDirectorName()
+        {
+            HelperMethods.PrintHeader("Find movies by director's name");
+            var name = HelperMethods.Search("director's full name");
+            var result = Service.FindMoviesByDirectorName(name);
+            Console.Clear();
+            HelperMethods.PrintHeader("Find movies by director's name");
+            HelperMethods.PrintHeader($"Results for \"{name}\":");
+            foreach (var item in result)
+            {
+                ActorPrinter.PrintMovie(item);
+                Console.WriteLine();
+            }
+            HelperMethods.Continue();
+        }
+
+        public static void FindPerformancesByName()
+        {
+            HelperMethods.PrintHeader("Find performances by name");
+            var name = HelperMethods.Search("performance's name");
+            var result = Service.FindPerformancesByName(name);
+            Console.Clear();
+            HelperMethods.PrintHeader("Find performances by name");
+            HelperMethods.PrintHeader($"Results for \"{name}\":");
+            foreach (var typeWithPerformances in result)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                Console.WriteLine($"{typeWithPerformances.Key.Name}s:");
+                Console.ForegroundColor = ConsoleColor.DarkGreen;
+                var performances = typeWithPerformances.ToList();
+                foreach (var performance in performances)
+                {
+                    Console.Write(performance.Name);
+                    if (performance is Movie movie)
+                        Console.Write($" ({movie.Year})");
+                    Console.WriteLine();
+                }
                 Console.WriteLine();
             }
             HelperMethods.Continue();

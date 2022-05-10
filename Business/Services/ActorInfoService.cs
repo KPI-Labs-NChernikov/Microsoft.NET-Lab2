@@ -302,12 +302,12 @@ namespace Business.Services
                 .Select(a => (Person)a)
                 .Intersect(Document
                     .Descendants("director")
-                    .Select(a => new Person
+                    .Select(d => new Person
                     {
-                        FirstName = a.Element("firstName")!.Value,
-                        LastName = a.Element("lastName")!.Value,
-                        Patronymic = a.Element("patronymic")?.Value,
-                        BirthYear = ushort.Parse(a.Element("birthYear")!.Value)
+                        FirstName = d.Element("firstName")!.Value,
+                        LastName = d.Element("lastName")!.Value,
+                        Patronymic = d.Element("patronymic")?.Value,
+                        BirthYear = ushort.Parse(d.Element("birthYear")!.Value)
                     }))
                 .Select(a => (ActorReduced)a)
                 .OrderBy(a => a.BirthYear);
@@ -315,7 +315,7 @@ namespace Business.Services
 
         /// <summary>
         /// 11) Find all actors that have a theatrical $character 
-        /// (at least, one of their theatrical characters is in given)
+        /// (at least, one of their theatrical characters equals given)
         /// </summary>
         /// <returns>IEnumerable of Actor that contains actors that starred in at least one movie 
         /// or spectacle with genre $genreId.</returns>
@@ -347,20 +347,75 @@ namespace Business.Services
         /// <returns>IEnumerable of Movie that contains all films 
         /// by director whose fullname contains $name,
         /// sorted by film year descending</returns>
-        public IEnumerable<Movie> FindMoviesByDirectorName(string name)
+        public IEnumerable<Movie> FindMoviesByDirectorName(string? name)
         {
-            // Use Ancestors()!!!
-            throw new NotImplementedException();
+            return Document
+                .Descendants("director")
+                .Select(d => new
+                {
+                    Element = d,
+                    Person = new Person
+                    {
+                        FirstName = d.Element("firstName")!.Value,
+                        LastName = d.Element("lastName")!.Value,
+                        Patronymic = d.Element("patronymic")?.Value,
+                        BirthYear = ushort.Parse(d.Element("birthYear")!.Value)
+                    }
+                })
+                .Where(d => d.Person.FullName.ToLower().Contains(name?.ToLower() ?? string.Empty))
+                .Select(d => {
+                    var movie = d.Element.Ancestors("performance").First();
+                    return new Movie
+                    {
+                        Director = d.Person,
+                        Name = movie.Element("name")!.Value,
+                        Year = ushort.Parse(movie.Element("year")!.Value),
+                        Genres = movie.Descendants("genre").Select(g => new Genre { Name = g.Value }).ToList(),
+
+                    };
+                })
+                .Distinct()
+                .OrderByDescending(m => m.Year);
         }
 
         /// <summary>
-        /// 13) Find all films and spectacles by name. Group by type - spectacle or movie
+        /// 13) Find all films and spectacles by name (performance name contains a given one, case-insensitive).
+        /// Group by type - spectacle or movie
         /// </summary>
         /// <param name="name"></param>
-        /// <returns>IEnumerable of Grouping of Type and its' performaances</returns>
-        public IEnumerable<IGrouping<Type, IPerformance>> FindPerformancesByName(string name)
+        /// <returns>IEnumerable of Grouping of Type and its' performances</returns>
+        public IEnumerable<IGrouping<Type, IPerformance>> FindPerformancesByName(string? name)
         {
-            throw new NotImplementedException();
+            var getPerformance = (XElement element, string name) =>
+            {
+                IPerformance performance = element.Element("_type")!.Value == typeof(Movie).ToString()
+                ? new Movie
+                {
+                    Year = ushort.Parse(element.Element("year")!.Value),
+                    Director = new Person
+                    {
+                        FirstName = element.Descendants("firstName").First().Value,
+                        LastName = element.Descendants("lastName").First().Value,
+                        Patronymic = element.Descendants("patronymic").FirstOrDefault()?.Value,
+                        BirthYear = ushort.Parse(element.Descendants("birthYear").First().Value),
+                    }
+                }
+                : new Spectacle();
+                performance.Name = name;
+                performance.Genres = element.Descendants("genre")
+                .Select(g => new Genre { Name = g.Value })
+                .ToList();
+                return performance;
+            };
+            return from performance in Document.Descendants("performance")
+                   let performanceName = performance.Element("name")!.Value
+                   where performanceName.ToLower().Contains(name?.ToLower() ?? string.Empty)
+                   select getPerformance(performance, performanceName) into converted
+                   group converted by converted into g
+                   select g.Key into distincted
+                   group distincted by distincted.GetType() into g
+                   orderby g.Key.Name
+                   select g;
         }
 
         /// <summary>
