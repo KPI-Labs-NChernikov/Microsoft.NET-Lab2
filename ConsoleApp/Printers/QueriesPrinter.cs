@@ -191,7 +191,7 @@ namespace ConsoleApp.Printers
             HelperMethods.PrintHeader($"Results for \"{name}\":");
             foreach (var actor in result)
             {
-                ActorPrinter.PrintActor((Actor)actor);
+                ActorPrinter.PrintActor(actor);
                 Console.WriteLine();
             }
             HelperMethods.Continue();

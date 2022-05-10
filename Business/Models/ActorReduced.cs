@@ -7,7 +7,7 @@ namespace Business.Models
         public IEnumerable<TheatricalCharacter> TheatricalCharacters { get; set; } = new List<TheatricalCharacter>();
 
 
-        public static explicit operator Actor(ActorReduced actorRed)
+        public static implicit operator Actor(ActorReduced actorRed)
         {
             return new Actor
             {
@@ -19,7 +19,7 @@ namespace Business.Models
             };
         }
 
-        public static implicit operator ActorReduced(Actor actor)
+        public static explicit operator ActorReduced(Actor actor)
         {
             return new ActorReduced
             {
