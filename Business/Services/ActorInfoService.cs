@@ -219,7 +219,7 @@ namespace Business.Services
         /// 7) Get top-N actors, sorted by quantity of main roles both in movies and speactacles.
         /// </summary>
         /// <param name="quantity">needed quantity (top N)</param>
-        /// <returns>IEnumerable of tuple with actors and quantity of theire main roles</returns>
+        /// <returns>IEnumerable of ActorStats with actors and quantity of their main roles</returns>
         public IEnumerable<ActorStats> GetTopMainRolesPopularActors(int quantity)
         {
             return Document
@@ -247,7 +247,8 @@ namespace Business.Services
         /// 8) Find all actors that fullname contains $name
         /// </summary>
         /// <param name="name"></param>
-        /// <returns></returns>
+        /// <returns>IEnumerable of ActorReduced that contains all matching actors
+        /// with their theatrical characters</returns>
         public IEnumerable<ActorReduced> FindActorByName(string? name)
         {
             return from actor in Document.Descendants("actor")
@@ -281,7 +282,8 @@ namespace Business.Services
         /// <summary>
         /// 10) Get all actors that are also directors. Sort by year of birth
         /// </summary>
-        /// <returns>IEnumerable of Actor that contains actors that were directors too, sorted by year of birth</returns>
+        /// <returns>IEnumerable of ActorReduced that contains actors that were directors too, 
+        /// sorted by year of birth</returns>
         public IEnumerable<ActorReduced> GetActorsDirectors()
         {
             return Document
