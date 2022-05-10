@@ -1,10 +1,6 @@
-﻿using Business.Services;
+﻿using Backend.Models;
+using Business.Services;
 using ConsoleApp.Helpers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ConsoleApp.Printers
 {
@@ -20,13 +16,12 @@ namespace ConsoleApp.Printers
                 ("Get all stakeholders with information about them and their professions." +
                 "Sort by profession, then - fullname", GetStakeholders),
                 ("Get directors with quantity of movies directed by them. " +
-                "Order by quantity of movies descending, then by full name ascending",
-                GetDirectorsStats),
+                "Order by quantity of movies descending, then by full name ascending", GetDirectorsStats),
                 ("Get all spectacles. Sort by name", GetSpectacles),
-                ("TODO", null!),
+                ("Get spectacle cast", GetSpectacleCast),
                 ("Get top-N actors. Sort by quantity of main roles both in movies and speactacles.",
-                null!),
-                ("Find actors by fullname", null!),
+                GetTopMainRolesPopularActors),
+                ("Find actors by fullname", FindActorByName),
                 ("Get genres that were used both in movies and spectacles", null!),
                 ("Get all actors that are directors too. Sort by year of birth",
                 null!),
@@ -124,6 +119,79 @@ namespace ConsoleApp.Printers
             foreach (var spectacle in result)
             {
                 ActorPrinter.PrintSpectacle(spectacle);
+                Console.WriteLine();
+            }
+            HelperMethods.Continue();
+        }
+
+        public static void GetSpectacleCast()
+        {
+            HelperMethods.PrintHeader("Spectacle's cast:");
+            var menu = new Menu()
+            {
+                Name = "spectacle's number"
+            };
+            var menuItems = new List<(string, Action)>();
+            var spectacles = Service.GetSpectacles();
+            for (int i = 0; i < spectacles.Count(); i++)
+            {
+                var spectacle = spectacles.ElementAt(i);
+                menuItems.Add((spectacle.Name, () =>
+                {
+                    var cast = Service.GetSpectacleCast(spectacle);
+                    HelperMethods.PrintHeader($"Spectacle's cast: {spectacle.Name}");
+                    foreach (var performanceRole in cast)
+                    {
+                        Console.Write($"{performanceRole.Actor.FullName} - {performanceRole.Role}");
+                        if (performanceRole.IsMain)
+                            Console.Write(" (main)");
+                        Console.WriteLine(Environment.NewLine);
+                    }
+                    HelperMethods.Continue();
+                }
+                ));
+            }
+            menu.Items = menuItems;
+            menu.Print(true);
+        }
+
+        public static void GetTopMainRolesPopularActors()
+        {
+            HelperMethods.PrintHeader("Top actors (by main roles):");
+            var form = new NumberForm<int>()
+            {
+                Min = 1,
+                Handler = int.TryParse
+            };
+            var quantity = form.GetNumber();
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            var result = Service.GetTopMainRolesPopularActors(quantity);
+            HelperMethods.PrintHeader($"Top-{quantity} actors (by main roles):");
+            for (int i = 0; i < result.Count(); i++)
+            {
+                var actor = result.ElementAt(i);
+                Console.WriteLine($"{i + 1}. {actor.Actor.FullName}");
+                Console.WriteLine($"Year of birth: {actor.Actor.BirthYear}");
+                if (actor.Actor.TheatricalCharacters.Any())
+                    Console.WriteLine($"Theatrical character: {string.Join("; ", actor.Actor.TheatricalCharacters)}");
+                Console.WriteLine($"Main roles played: {actor.MainRolesQuantity}");
+                Console.WriteLine();
+            }
+            HelperMethods.Continue();
+        }
+
+        public static void FindActorByName()
+        {
+            HelperMethods.PrintHeader("Find actor");
+            var name = HelperMethods.Search("actor's full name");
+            var result = Service.FindActorByName(name);
+            Console.Clear();
+            HelperMethods.PrintHeader("Find actor");
+            HelperMethods.PrintHeader($"Results for \"{name}\":");
+            foreach (var actor in result)
+            {
+                ActorPrinter.PrintActor((Actor)actor);
                 Console.WriteLine();
             }
             HelperMethods.Continue();

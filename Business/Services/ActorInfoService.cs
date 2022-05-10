@@ -182,12 +182,37 @@ namespace Business.Services
         }
 
         /// <summary>
-        /// 6) TODO
+        /// 6) Get actors on roles by the $spectacle. sort by: type of the role
         /// </summary>
-        /// <returns>IEnumerable of groups with genres and movies</returns>
-        public IEnumerable<IGrouping<Genre, Movie>> Query6()
+        /// <param name="spectacle"></param>
+        /// <returns>IEnumerable of ActorOnPerformance with actor, role and bool role status</returns>
+        public IEnumerable<ActorOnPerformance> GetSpectacleCast(Spectacle spectacle)
         {
-            throw new NotImplementedException();
+            return from spec in Document.Descendants("performance")
+                   where spec.Element("_type")!.Value == typeof(Spectacle).ToString()
+                   && new Spectacle
+                   {
+                       Name = spec.Element("name")!.Value,
+                       Genres = spec
+                           .Descendants("genre")
+                           .Select(g => new Genre { Name = g.Value }).ToList()
+                   }.Equals(spectacle)
+                   let filmographyItem = spec.Ancestors("filmographyItem").First()
+                   let actor = filmographyItem.Ancestors("actor").First()
+                   let isMain = bool.Parse(filmographyItem.Element("isMain")!.Value)
+                   orderby isMain descending
+                   select new ActorOnPerformance
+                   {
+                       Role = filmographyItem.Element("role")!.Value,
+                       IsMain = isMain,
+                       Actor = new Person
+                       {
+                           FirstName = actor.Element("firstName")!.Value,
+                           LastName = actor.Element("lastName")!.Value,
+                           Patronymic = actor.Element("patronymic")?.Value,
+                           BirthYear = ushort.Parse(actor.Element("birthYear")!.Value)
+                       }
+                   };
         }
 
         /// <summary>
@@ -197,17 +222,46 @@ namespace Business.Services
         /// <returns>IEnumerable of tuple with actors and quantity of theire main roles</returns>
         public IEnumerable<ActorStats> GetTopMainRolesPopularActors(int quantity)
         {
-            throw new NotImplementedException();
+            return Document
+                .Descendants("actor")
+                .Select(a => new ActorStats
+                {
+                    Actor = new ActorReduced
+                    {
+                        FirstName = a.Element("firstName")!.Value,
+                        LastName = a.Element("lastName")!.Value,
+                        Patronymic = a.Element("patronymic")?.Value,
+                        BirthYear = ushort.Parse(a.Element("birthYear")!.Value),
+                        TheatricalCharacters = a.Descendants("theatricalCharacter")
+                            .Select(t => new TheatricalCharacter { Name = t.Value }).ToList()
+                    },
+                    MainRolesQuantity = a
+                        .Descendants("filmographyItem")
+                        .Count(f => f.Element("isMain")!.Value == true.ToString())
+                })
+                .OrderByDescending(a => a.MainRolesQuantity)
+                .Take(quantity);
         }
 
         /// <summary>
         /// 8) Find all actors that fullname contains $name
         /// </summary>
-        /// <param name="fullName"></param>
+        /// <param name="name"></param>
         /// <returns></returns>
-        public IEnumerable<ActorReduced> FindActorByName(string name)
+        public IEnumerable<ActorReduced> FindActorByName(string? name)
         {
-            throw new NotImplementedException();
+            return from actor in Document.Descendants("actor")
+                   select new ActorReduced
+                   {
+                       FirstName = actor.Element("firstName")!.Value,
+                       LastName = actor.Element("lastName")!.Value,
+                       Patronymic = actor.Element("patronymic")?.Value,
+                       BirthYear = ushort.Parse(actor.Element("birthYear")!.Value),
+                       TheatricalCharacters = actor.Descendants("theatricalCharacter")
+                            .Select(t => new TheatricalCharacter { Name = t.Value }).ToList()
+                   } into converted
+                   where converted.FullName.ToLower().Contains(name?.ToLower() ?? string.Empty)
+                   select converted;
         }
 
         /// <summary>

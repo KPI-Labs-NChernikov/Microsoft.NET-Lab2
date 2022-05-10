@@ -49,7 +49,8 @@ namespace ConsoleApp.Printers
         {
             Console.WriteLine($"Name: {actor.FullName}");
             Console.WriteLine($"Year of birth: {actor.BirthYear}");
-            Console.WriteLine($"Theatrical character: {string.Join("; ", actor.TheatricalCharacters)}");
+            if (actor.TheatricalCharacters.Any())
+                Console.WriteLine($"Theatrical character: {string.Join("; ", actor.TheatricalCharacters)}");
         }
 
         public static void PrintSpectacle(Spectacle spectacle, string? start = null)
