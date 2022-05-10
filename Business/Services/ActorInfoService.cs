@@ -226,7 +226,8 @@ namespace Business.Services
         }
 
         /// <summary>
-        /// 7) Get top-N actors, sorted by quantity of main roles both in movies and speactacles.
+        /// 7) Get top-N actors, sorted by quantity of main roles both in movies and spectacles. 
+        /// Sort by quantity of main roles desc, then by year of birth ascending
         /// </summary>
         /// <param name="quantity">needed quantity (top N)</param>
         /// <returns>IEnumerable of ActorStats with actors and quantity of their main roles</returns>
@@ -250,6 +251,7 @@ namespace Business.Services
                         .Count(f => f.Element("isMain")!.Value == true.ToString())
                 })
                 .OrderByDescending(a => a.MainRolesQuantity)
+                .ThenBy(a => a.Actor.BirthYear)
                 .Take(quantity);
         }
 

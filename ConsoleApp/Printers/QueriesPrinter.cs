@@ -13,13 +13,14 @@ namespace ConsoleApp.Printers
                 "Sort by full name, then - year of birth", GetActors),
                 ("Get all films starting from any year. Sort by year descending, then by name ascending",
                 GetMoviesFromYear),
-                ("Get all stakeholders with information about them and their professions." +
+                ("Get all stakeholders with information about them and their professions. " +
                 "Sort by profession, then - fullname", GetStakeholders),
                 ("Get directors with quantity of movies directed by them. " +
                 "Order by quantity of movies descending, then by full name ascending", GetDirectorsStats),
                 ("Get all spectacles. Sort by name", GetSpectacles),
                 ("Get spectacle cast", GetSpectacleCast),
-                ("Get top-N actors. Sort by quantity of main roles both in movies and speactacles.",
+                ("Get top-N actors. Sort by quantity of main roles both in movies and spectacles desc, " +
+                "then by year of birth ascending.",
                 GetTopMainRolesPopularActors),
                 ("Find actors by fullname", FindActorByName),
                 ("Get genres that were used both in movies and spectacles", GetUniversalGenres),
