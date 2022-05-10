@@ -30,7 +30,7 @@ namespace ConsoleApp.Printers
                 ("Find all films and spectacles by name. Group by type - spectacle or movie",
                 FindPerformancesByName),
                 ("Get genres with quantity of movies and spectacles of them. " +
-                "Sort by quantity of movies desc., then - spectacles desc.", null!),
+                "Sort by total quantity of performances desc., then - spectacles desc.", GetGenresStats),
                 ("Find spectacles of the specific genre", FindSpectaclesByGenre)
             };
 
@@ -276,6 +276,24 @@ namespace ConsoleApp.Printers
                         Console.Write($" ({movie.Year})");
                     Console.WriteLine();
                 }
+                Console.WriteLine();
+            }
+            HelperMethods.Continue();
+        }
+
+        public static void GetGenresStats()
+        {
+            var result = Service.GetGenresStats();
+            HelperMethods.PrintHeader("Genres' stats:");
+            for (int i = 0; i < result.Count(); i++)
+            {
+                var genre = result.ElementAt(i);
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                Console.WriteLine(genre.Genre);
+                Console.ForegroundColor = ConsoleColor.DarkGreen;
+                Console.WriteLine($"Totally: {genre.TotalQuantity}");
+                Console.WriteLine($"Movies: {genre.MoviesQuantity}");
+                Console.WriteLine($"Spectacles: {genre.SpectaclesQuantity}");
                 Console.WriteLine();
             }
             HelperMethods.Continue();

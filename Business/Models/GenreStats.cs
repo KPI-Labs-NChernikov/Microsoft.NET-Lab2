@@ -1,8 +1,10 @@
-﻿namespace Business.Models
+﻿using Backend.Models;
+
+namespace Business.Models
 {
     public record GenreStats
     {
-        public string Genre { get; init; } = string.Empty;
+        public Genre Genre { get; init; } = new Genre();
 
         public int MoviesQuantity { get; init; }
 

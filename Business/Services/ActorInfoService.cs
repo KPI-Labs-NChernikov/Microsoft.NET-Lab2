@@ -19,7 +19,7 @@ namespace Business.Services
 
         private static FilmographyItem GetFilmographyItem(XElement element)
         {
-            var fi = new FilmographyItem
+            var item = new FilmographyItem
             {
                 Role = element.Element("role")!.Value,
                 IsMain = bool.Parse(element.Element("isMain")!.Value),
@@ -37,11 +37,19 @@ namespace Business.Services
                 }
                 : new Spectacle()
             };
-            fi.Performance.Name = element.Descendants("name").First().Value;
-            fi.Performance.Genres = element.Descendants("genre")
+            item.Performance.Name = element.Descendants("name").First().Value;
+            item.Performance.Genres = element.Descendants("genre")
                 .Select(g => new Genre { Name = g.Value })
                 .ToList();
-            return fi;
+            return item;
+        }
+
+        private IEnumerable<T> GetPerformances<T>(Func<XElement, T> selector)
+        {
+            return Document.Descendants("performance")
+            .Where(s => s.Element("_type")!.Value == typeof(T).ToString())
+            .Select(selector)
+            .Distinct();
         }
 
         /// <summary>
@@ -420,12 +428,42 @@ namespace Business.Services
 
         /// <summary>
         /// 14) Get genres with quantity of movies and spectacles of them. 
-        /// Sort by quantity of movies desc., then - spectacles desc.
+        /// Sort by quantity of performances (both movies and spectacles) desc., then - movies desc.
         /// </summary>
         /// <returns>IEnumerable of GenreStats</returns>
         public IEnumerable<GenreStats> GetGenresStats()
         {
-            throw new NotImplementedException();
+            return Document
+                .Descendants("genre")
+                .Select(g => new Genre { Name = g!.Value })
+                .Distinct()
+                .Select(g => new GenreStats
+                {
+                    Genre = g,
+                    MoviesQuantity = GetPerformances((XElement s) => new Movie
+                        {
+                            Name = s.Element("name")!.Value,
+                            Genres = s.Descendants("genre")
+                                    .Select(g => new Genre { Name = g.Value }).ToList(),
+                            Year = ushort.Parse(s.Element("year")!.Value),
+                            Director = new Person
+                            {
+                                FirstName = s.Descendants("firstName").First().Value,
+                                LastName = s.Descendants("lastName").First().Value,
+                                Patronymic = s.Descendants("patronymic").FirstOrDefault()?.Value,
+                                BirthYear = ushort.Parse(s.Descendants("birthYear").First().Value),
+                            }
+                        }).Where(m => m.Genres.Contains(g)).Count(),
+                    SpectaclesQuantity = GetPerformances((XElement s) => new Spectacle
+                        {
+                            Name = s.Element("name")!.Value,
+                            Genres = s
+                            .Descendants("genre")
+                            .Select(g => new Genre { Name = g.Value }).ToList()
+                        }).Where(s => s.Genres.Contains(g)).Count()
+                })
+                .OrderByDescending(g => g.TotalQuantity)
+                .ThenByDescending(g => g.MoviesQuantity);
         }
 
         /// <summary>
