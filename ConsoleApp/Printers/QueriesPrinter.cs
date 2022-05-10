@@ -25,7 +25,7 @@ namespace ConsoleApp.Printers
                 ("Get genres that were used both in movies and spectacles", GetUniversalGenres),
                 ("Get all actors that are directors too. Sort by year of birth",
                 GetActorsDirectors),
-                ("TODO", null!),
+                ("Find all actors that have a certain theatrical character", FindActorsByTheatricalCharacter),
                 ("Find films by director's full name. Sort by film year descending",
                 null!),
                 ("Find all films and spectacles by name. Group by type - spectacle or movie",
@@ -50,7 +50,10 @@ namespace ConsoleApp.Printers
             var result = Service.GetActors();
             HelperMethods.PrintHeader("Actors");
             foreach (var actor in result)
+            {
                 ActorPrinter.PrintActorWithFilmography(actor);
+                Console.WriteLine();
+            }
             HelperMethods.Continue();
         }
 
@@ -220,13 +223,31 @@ namespace ConsoleApp.Printers
             HelperMethods.Continue();
         }
 
+        public static void FindActorsByTheatricalCharacter()
+        {
+            var header = "Find actors by theatrical character";
+            HelperMethods.PrintHeader(header);
+            var character = HelperMethods.Search("theatrical character");
+            var result = Service.FindActorsByTheatricalCharacter(character);
+            Console.Clear();
+            HelperMethods.PrintHeader(header);
+            HelperMethods.PrintHeader($"Results for \"{character}\":");
+            foreach (var actor in result)
+            {
+                ActorPrinter.PrintActorWithFilmography(actor);
+                Console.WriteLine();
+            }
+            HelperMethods.Continue();
+        }
+
         public static void FindSpectaclesByGenre()
         {
-            HelperMethods.PrintHeader("Find spectacles by genre");
+            var header = "Find spectacles by genre";
+            HelperMethods.PrintHeader(header);
             var name = HelperMethods.Search("genre's name");
             var result = Service.FindSpectaclesByGenre(name);
             Console.Clear();
-            HelperMethods.PrintHeader("Find spectacles by genre");
+            HelperMethods.PrintHeader(header);
             HelperMethods.PrintHeader($"Results for \"{name}\":");
             foreach (var spectacle in result)
             {

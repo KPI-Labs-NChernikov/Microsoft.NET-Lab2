@@ -3,7 +3,7 @@ using Backend.Models;
 using Business.Interfaces;
 using System.Xml.Linq;
 
-namespace Business.Services
+namespace Business.Other
 {
     public class XDocumentHandler : IXDocumentHandler
     {

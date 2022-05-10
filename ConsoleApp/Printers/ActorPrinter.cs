@@ -15,7 +15,10 @@ namespace ConsoleApp.Printers
             var result = Service.GetAll();
             HelperMethods.PrintHeader("Show all");
             foreach (var actor in result)
+            {
                 PrintActorWithFilmography(actor);
+                Console.WriteLine();
+            }
             HelperMethods.Continue();
         }
 
@@ -42,7 +45,6 @@ namespace ConsoleApp.Printers
                 }
                 Console.WriteLine();
             }
-            Console.WriteLine();
         }
 
         public static void PrintActor(Actor actor)

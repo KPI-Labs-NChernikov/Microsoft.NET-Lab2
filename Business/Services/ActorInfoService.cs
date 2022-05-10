@@ -17,6 +17,33 @@ namespace Business.Services
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
         }
 
+        private static FilmographyItem GetFilmographyItem(XElement element)
+        {
+            var fi = new FilmographyItem
+            {
+                Role = element.Element("role")!.Value,
+                IsMain = bool.Parse(element.Element("isMain")!.Value),
+                Performance = (element.Descendants("_type").First().Value == typeof(Movie).ToString())
+                ? new Movie
+                {
+                    Year = ushort.Parse(element.Descendants("year").First().Value),
+                    Director = new Person
+                    {
+                        FirstName = element.Descendants("firstName").First().Value,
+                        LastName = element.Descendants("lastName").First().Value,
+                        Patronymic = element.Descendants("patronymic").FirstOrDefault()?.Value,
+                        BirthYear = ushort.Parse(element.Descendants("birthYear").First().Value),
+                    }
+                }
+                : new Spectacle()
+            };
+            fi.Performance.Name = element.Descendants("name").First().Value;
+            fi.Performance.Genres = element.Descendants("genre")
+                .Select(g => new Genre { Name = g.Value })
+                .ToList();
+            return fi;
+        }
+
         /// <summary>
         /// 1) Get all actors with their filmographies and theatrical characters.
         /// Sort by full name, then - year of birth
@@ -35,32 +62,7 @@ namespace Business.Services
                     TheatricalCharacters = a.Descendants("theatricalCharacter")
                     .Select(t => new TheatricalCharacter { Name = t.Value }).ToList(),
                     Filmography = a.Descendants("filmographyItem")
-                    .Select(t =>
-                    {
-                        var item = new FilmographyItem
-                        {
-                            Role = t.Element("role")!.Value,
-                            IsMain = bool.Parse(t.Element("isMain")!.Value),
-                            Performance = (t.Descendants("_type").First().Value == typeof(Movie).ToString())
-                               ? new Movie
-                               {
-                                   Year = ushort.Parse(t.Descendants("year").First().Value),
-                                   Director = new Person
-                                   {
-                                       FirstName = a.Descendants("firstName").First().Value,
-                                       LastName = a.Descendants("lastName").First().Value,
-                                       Patronymic = a.Descendants("patronymic").FirstOrDefault()?.Value,
-                                       BirthYear = ushort.Parse(a.Descendants("birthYear").First().Value),
-                                   }
-                               }
-                               : new Spectacle()
-                        };
-                        item.Performance.Name = t.Descendants("name").First().Value;
-                        item.Performance.Genres = t.Descendants("genre")
-                        .Select(g => new Genre { Name = g.Value })
-                        .ToList();
-                        return item;
-                    }).ToList()
+                    .Select(t => GetFilmographyItem(t)).ToList()
                 })
                 .OrderBy(a => a.FullName)
                 .ThenBy(a => a.BirthYear);
@@ -312,13 +314,30 @@ namespace Business.Services
         }
 
         /// <summary>
-        /// 11) TODO!!!
+        /// 11) Find all actors that have a theatrical $character 
+        /// (at least, one of their theatrical characters is in given)
         /// </summary>
         /// <returns>IEnumerable of Actor that contains actors that starred in at least one movie 
         /// or spectacle with genre $genreId.</returns>
-        public IEnumerable<Actor> Query11()
+        public IEnumerable<Actor> FindActorsByTheatricalCharacter(string? character)
         {
-            throw new NotImplementedException();
+            return from c in Document.Descendants("theatricalCharacter")
+                   where c.Value.Trim().ToLower() == character?.Trim().ToLower()
+                   let actor = c.Ancestors("actor").First()
+                   select new Actor
+                   {
+                       FirstName = actor.Element("firstName")!.Value,
+                       LastName = actor.Element("lastName")!.Value,
+                       Patronymic = actor.Element("patronymic")?.Value,
+                       BirthYear = ushort.Parse(actor.Element("birthYear")!.Value),
+                       TheatricalCharacters = (from tc in actor.Descendants("theatricalCharacter")
+                                               select new TheatricalCharacter { Name = tc.Value }).ToList(),
+                       Filmography = (from item in actor.Descendants("filmographyItem")
+                                      select GetFilmographyItem(item)).ToList()
+                   }
+                   into converted
+                   group converted by converted into g
+                   select g.Key;
         }
 
         /// <summary>
